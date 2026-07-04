@@ -78,7 +78,7 @@ export default function RootLayout({
 
         <footer className="border-t border-gray-200 bg-white py-8">
           <div className="mx-auto max-w-7xl px-4 text-center text-xs text-gray-500 sm:px-6 lg:px-8">
-            <p>&copy; {new Date().getFullYear()} Study Materials Portal. A MicroX Project. All rights reserved MicroX.</p>
+            <p>&copy; {new Date().getFullYear()} A MicroX Project. All rights reserved MicroX.</p>
           </div>
         </footer>
       </body>
