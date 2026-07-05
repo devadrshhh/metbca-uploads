@@ -24,6 +24,12 @@ export async function GET(
 
     // Construct the download URL
     let downloadUrl = fileDoc.fileUrl;
+    const extension = fileDoc.fileType.toLowerCase();
+
+    // If the URL does not end with the extension, append it to help the browser save it with the correct format
+    if (!downloadUrl.toLowerCase().endsWith(`.${extension}`)) {
+      downloadUrl = `${downloadUrl}.${extension}`;
+    }
 
     // Apply fl_attachment only to image/upload resources (PDFs, images) to force download
     // Raw assets (docx, zip, html) download directly by default and do not support transformations
