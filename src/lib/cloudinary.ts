@@ -18,12 +18,14 @@ export function uploadFileStream(
   folder: string = 'study_materials'
 ): Promise<{ publicId: string; url: string; fileType: string; fileSize: number }> {
   return new Promise((resolve, reject) => {
-    // Clean file name to be URL-friendly
-    const cleanName = fileName
+    // Clean file name to be URL-friendly, preserving the extension
+    const ext = fileName.split('.').pop() || '';
+    const baseName = fileName
       .split('.')
       .slice(0, -1)
       .join('.')
       .replace(/[^a-zA-Z0-9]/g, '_');
+    const cleanName = ext ? `${baseName}.${ext.toLowerCase()}` : baseName;
 
     const uploadStream = cloudinary.uploader.upload_stream(
       {
