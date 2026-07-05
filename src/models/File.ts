@@ -13,6 +13,7 @@ export interface IFile extends Document {
   downloads: number;
   approved: boolean;
   uploadedBy: 'admin' | 'user';
+  roomId?: string;
   createdAt: Date;
 }
 
@@ -29,6 +30,7 @@ const FileSchema: Schema = new Schema({
   downloads: { type: Number, default: 0 },
   approved: { type: Boolean, default: true },
   uploadedBy: { type: String, enum: ['admin', 'user'], default: 'admin' },
+  roomId: { type: Schema.Types.ObjectId, ref: 'Room' },
   createdAt: { type: Date, default: Date.now },
 });
 

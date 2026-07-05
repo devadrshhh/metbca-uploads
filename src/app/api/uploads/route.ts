@@ -11,18 +11,27 @@ export async function GET(req: NextRequest) {
     const semester = req.nextUrl.searchParams.get('semester') || '';
     const subject = req.nextUrl.searchParams.get('subject') || '';
 
-    const filter: any = { approved: true };
-    if (department) filter.department = department;
-    if (semester) filter.semester = semester;
-    if (subject) filter.subject = subject;
+    // Exclude room-specific files from general student uploads list
+    const filter: any = {
+      $and: [
+        { approved: true },
+        { $or: [{ roomId: null }, { roomId: { $exists: false } }] }
+      ]
+    };
+
+    if (department) filter.$and.push({ department });
+    if (semester) filter.$and.push({ semester });
+    if (subject) filter.$and.push({ subject });
 
     if (search) {
-      filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { subject: { $regex: search, $options: 'i' } },
-        { department: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-      ];
+      filter.$and.push({
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { subject: { $regex: search, $options: 'i' } },
+          { department: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+        ]
+      });
     }
 
     const uploads = await UserUpload.find(filter).sort({ createdAt: -1 });
@@ -40,6 +49,7 @@ export async function POST(req: NextRequest) {
     const department = formData.get('department') as string;
     const semester = formData.get('semester') as string;
     const subject = formData.get('subject') as string;
+    const roomId = formData.get('roomId') as string;
     const file = formData.get('file') as any;
 
     if (!title || !department || !semester || !subject || !file) {
@@ -66,13 +76,14 @@ export async function POST(req: NextRequest) {
       fileType: cloudinaryResult.fileType,
       fileSize: cloudinaryResult.fileSize,
       downloads: 0,
-      approved: false, // Requires admin approval
+      approved: roomId ? true : false, // Room uploads do not require admin approval
       uploadedBy: 'user',
+      roomId: roomId || undefined,
     });
 
     return NextResponse.json(
       {
-        message: 'File uploaded successfully and is pending admin approval.',
+        message: 'File uploaded successfully.',
         file: newUserUpload,
       },
       { status: 201 }

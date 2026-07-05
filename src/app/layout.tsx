@@ -52,6 +52,9 @@ export default function RootLayout({
                 <Link href="/uploads" className="hover:text-black transition-colors">
                   User Uploads
                 </Link>
+                <Link href="/room" className="hover:text-black transition-colors">
+                  Rooms
+                </Link>
               </nav>
             </div>
             <div className="flex items-center gap-4">
@@ -70,6 +73,9 @@ export default function RootLayout({
             </Link>
             <Link href="/uploads" className="hover:text-black transition-colors py-1">
               User Uploads
+            </Link>
+            <Link href="/room" className="hover:text-black transition-colors py-1">
+              Rooms
             </Link>
           </div>
         </header>
