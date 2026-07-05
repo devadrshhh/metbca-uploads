@@ -16,13 +16,13 @@ export default function RoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Form states
+  // Modal & Form states
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [author, setAuthor] = useState('');
   const [creating, setCreating] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
 
   const fetchRooms = async () => {
     try {
@@ -50,7 +50,6 @@ export default function RoomsPage() {
     try {
       setCreating(true);
       setErrorMsg('');
-      setSuccessMsg('');
 
       const res = await fetch('/api/rooms', {
         method: 'POST',
@@ -62,7 +61,7 @@ export default function RoomsPage() {
         setName('');
         setDescription('');
         setAuthor('');
-        setSuccessMsg('Room created successfully!');
+        setIsModalOpen(false);
         fetchRooms();
       } else {
         const data = await res.json();
@@ -77,27 +76,99 @@ export default function RoomsPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 flex-1 w-full">
-      <div className="border-b border-gray-200 pb-5 mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Study Rooms</h1>
-        <p className="mt-2 text-sm text-gray-500">
-          Create collaborative spaces for different subjects or semesters and share materials with other students.
-        </p>
+      {/* Top Header Section */}
+      <div className="border-b border-gray-200 pb-5 mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Study Rooms</h1>
+          <p className="mt-2 text-sm text-gray-500">
+            Create collaborative spaces for different subjects or semesters and share materials with other students.
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            setErrorMsg('');
+            setIsModalOpen(true);
+          }}
+          className="inline-flex items-center justify-center rounded-md bg-black px-4 py-2.5 text-xs font-semibold text-white hover:bg-neutral-800 transition-colors whitespace-nowrap self-start sm:self-center"
+        >
+          Create Study Room
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Left: Create Room Form */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-24 bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Create New Room</h2>
-            
-            {successMsg && (
-              <div className="mb-4 rounded-md bg-green-50 p-3 text-xs font-medium text-green-800">
-                {successMsg}
-              </div>
-            )}
+      {/* Rooms Grid */}
+      <div>
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-black"></div>
+          </div>
+        ) : rooms.length === 0 ? (
+          <div className="text-center py-12 border border-dashed border-gray-300 rounded-lg bg-white">
+            <svg
+              className="mx-auto h-12 w-12 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.5"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+              />
+            </svg>
+            <h3 className="mt-2 text-sm font-semibold text-gray-900">No rooms yet</h3>
+            <p className="mt-1 text-sm text-gray-500">Create a study room to start sharing files collaboratively.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {rooms.map((room) => (
+              <Link
+                key={room._id}
+                href={`/room/${room._id}`}
+                className="block p-5 bg-white rounded-lg border border-gray-200 shadow-sm hover:border-black hover:shadow-md transition-all duration-200 group"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-base font-bold text-gray-900 group-hover:text-black line-clamp-1">
+                    {room.name}
+                  </h3>
+                  <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
+                    {room.fileCount} {room.fileCount === 1 ? 'file' : 'files'}
+                  </span>
+                </div>
+                
+                <p className="text-sm text-gray-500 line-clamp-2 min-h-[40px] mb-4">
+                  {room.description || 'No description provided.'}
+                </p>
+
+                {room.author && (
+                  <div className="text-xs text-gray-400 mb-2 font-medium">
+                    Created by: {room.author}
+                  </div>
+                )}
+
+                <div className="flex items-center text-xs font-semibold text-black uppercase tracking-wider group-hover:underline">
+                  Enter Room &rarr;
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Creation Modal popup */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-xl w-full max-w-md relative animate-in fade-in zoom-in duration-150">
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-black text-xl font-semibold outline-none"
+            >
+              &times;
+            </button>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Create New Room</h2>
 
             {errorMsg && (
-              <div className="mb-4 rounded-md bg-red-50 p-3 text-xs font-medium text-red-800">
+              <div className="mb-4 rounded bg-red-50 p-2.5 text-xs font-medium text-red-800">
                 {errorMsg}
               </div>
             )}
@@ -153,67 +224,7 @@ export default function RoomsPage() {
             </form>
           </div>
         </div>
-
-        {/* Right: Rooms List */}
-        <div className="lg:col-span-2">
-          {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-black"></div>
-            </div>
-          ) : rooms.length === 0 ? (
-            <div className="text-center py-12 border border-dashed border-gray-300 rounded-lg bg-white">
-              <svg
-                className="mx-auto h-12 w-12 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="1.5"
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
-              <h3 className="mt-2 text-sm font-semibold text-gray-900">No rooms yet</h3>
-              <p className="mt-1 text-sm text-gray-500">Create a study room to start sharing files collaboratively.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {rooms.map((room) => (
-                <Link
-                  key={room._id}
-                  href={`/room/${room._id}`}
-                  className="block p-5 bg-white rounded-lg border border-gray-200 shadow-sm hover:border-black hover:shadow-md transition-all duration-200 group"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-base font-bold text-gray-900 group-hover:text-black line-clamp-1">
-                      {room.name}
-                    </h3>
-                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
-                      {room.fileCount} {room.fileCount === 1 ? 'file' : 'files'}
-                    </span>
-                  </div>
-                  
-                  <p className="text-sm text-gray-500 line-clamp-2 min-h-[40px] mb-4">
-                    {room.description || 'No description provided.'}
-                  </p>
-
-                  {room.author && (
-                    <div className="text-xs text-gray-400 mb-2 font-medium">
-                      Created by: {room.author}
-                    </div>
-                  )}
-
-                  <div className="flex items-center text-xs font-semibold text-black uppercase tracking-wider group-hover:underline">
-                    Enter Room &rarr;
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -58,8 +58,8 @@ export default function AdminPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loadingData, setLoadingData] = useState(false);
 
-  // Tab state: 'manage' | 'pending' | 'upload'
-  const [activeTab, setActiveTab] = useState<'manage' | 'pending' | 'upload'>('manage');
+  // Tab state: 'manage' | 'pending' | 'upload' | 'rooms'
+  const [activeTab, setActiveTab] = useState<'manage' | 'pending' | 'upload' | 'rooms'>('manage');
 
   // Direct Upload Form states
   const [uploadTitle, setUploadTitle] = useState('');
@@ -82,6 +82,13 @@ export default function AdminPage() {
   const [editFileReplace, setEditFileReplace] = useState<File | null>(null);
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState('');
+
+  // Rooms Management states
+  const [rooms, setRooms] = useState<any[]>([]);
+  const [selectedRoom, setSelectedRoom] = useState<any | null>(null);
+  const [roomFiles, setRoomFiles] = useState<any[]>([]);
+  const [loadingRoomFiles, setLoadingRoomFiles] = useState(false);
+  const [roomFilesError, setRoomFilesError] = useState('');
 
   const checkAuth = async () => {
     try {
@@ -120,10 +127,80 @@ export default function AdminPage() {
         setAdminFiles(filesData.adminFiles || []);
         setUserUploads(filesData.userUploads || []);
       }
+
+      // Fetch Rooms
+      const roomsRes = await fetch('/api/rooms');
+      if (roomsRes.ok) {
+        const roomsData = await roomsRes.json();
+        setRooms(roomsData);
+      }
     } catch (err) {
       console.error('Error fetching admin data', err);
     } finally {
       setLoadingData(false);
+    }
+  };
+
+  const handleDeleteRoom = async (roomId: string) => {
+    if (!confirm('Are you sure you want to delete this room and all files inside it? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/rooms/${roomId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        fetchDashboardData();
+      } else {
+        alert('Failed to delete room.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while deleting the room.');
+    }
+  };
+
+  const handleViewRoomFiles = async (room: any) => {
+    setSelectedRoom(room);
+    setLoadingRoomFiles(true);
+    setRoomFilesError('');
+    try {
+      const res = await fetch(`/api/rooms/${room._id}`);
+      if (res.ok) {
+        const json = await res.json();
+        setRoomFiles(json.files || []);
+      } else {
+        setRoomFilesError('Failed to fetch room files.');
+      }
+    } catch (err) {
+      console.error(err);
+      setRoomFilesError('An error occurred.');
+    } finally {
+      setLoadingRoomFiles(false);
+    }
+  };
+
+  const handleDeleteRoomFile = async (fileId: string) => {
+    if (!confirm('Are you sure you want to delete this file?')) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/files/${fileId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        // Refresh files in modal
+        if (selectedRoom) {
+          handleViewRoomFiles(selectedRoom);
+        }
+        // Also refresh general dashboard data
+        fetchDashboardData();
+      } else {
+        alert('Failed to delete file.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred.');
     }
   };
 
@@ -498,6 +575,14 @@ export default function AdminPage() {
           <Plus className="h-4 w-4" />
           <span>Upload File</span>
         </button>
+        <button
+          onClick={() => setActiveTab('rooms')}
+          className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${
+            activeTab === 'rooms' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'
+          }`}
+        >
+          Manage Rooms ({rooms.length})
+        </button>
       </div>
 
       {/* Tab Contents */}
@@ -772,6 +857,55 @@ export default function AdminPage() {
         </div>
       )}
 
+      {activeTab === 'rooms' && (
+        <div className="rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm">
+          {rooms.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-sm text-gray-500">No rooms have been created yet.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3">Room Name</th>
+                    <th className="px-6 py-3">Description</th>
+                    <th className="px-6 py-3">Author</th>
+                    <th className="px-6 py-3 text-center">Files</th>
+                    <th className="px-6 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {rooms.map((room) => (
+                    <tr key={room._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 font-bold text-gray-900">{room.name}</td>
+                      <td className="px-6 py-4 text-gray-500 max-w-xs truncate">{room.description || '-'}</td>
+                      <td className="px-6 py-4 text-gray-500">{room.author || 'Anonymous'}</td>
+                      <td className="px-6 py-4 text-center font-semibold text-gray-700">{room.fileCount}</td>
+                      <td className="px-6 py-4 text-right space-x-2">
+                        <button
+                          onClick={() => handleViewRoomFiles(room)}
+                          className="inline-flex items-center justify-center rounded border border-gray-300 bg-white px-2.5 py-1.5 text-[10px] font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          View Files
+                        </button>
+                        <button
+                          onClick={() => handleDeleteRoom(room._id)}
+                          className="inline-flex items-center justify-center rounded border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-[10px] font-semibold text-rose-700 hover:bg-rose-100 transition-colors"
+                        >
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Delete Room
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* EDIT MODAL DIALOG */}
       {editingFile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -903,6 +1037,82 @@ export default function AdminPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW ROOM FILES MODAL */}
+      {selectedRoom && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-2xl rounded-lg border border-gray-200 bg-white p-6 shadow-lg relative animate-in fade-in zoom-in duration-150">
+            <button
+              onClick={() => setSelectedRoom(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-black text-xl font-semibold outline-none"
+            >
+              &times;
+            </button>
+            
+            <h3 className="text-base font-bold text-gray-900 mb-1">Files inside: {selectedRoom.name}</h3>
+            <p className="text-xs text-gray-500 mb-6">Manage all peer-uploaded resources for this collaborative space.</p>
+
+            {loadingRoomFiles ? (
+              <div className="flex justify-center items-center py-12">
+                <RefreshCw className="h-6 w-6 animate-spin text-gray-400 animate-infinite" />
+              </div>
+            ) : roomFilesError ? (
+              <div className="rounded bg-rose-50 p-3 text-xs text-rose-800 border border-rose-200 mb-4">
+                {roomFilesError}
+              </div>
+            ) : roomFiles.length === 0 ? (
+              <div className="text-center py-12 text-gray-500 text-xs">
+                No files uploaded to this room yet.
+              </div>
+            ) : (
+              <div className="max-h-[300px] overflow-y-auto border border-gray-200 rounded">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 sticky top-0">
+                    <tr>
+                      <th className="px-4 py-2">Title</th>
+                      <th className="px-4 py-2">Subject / Dept</th>
+                      <th className="px-4 py-2 text-center">Downloads</th>
+                      <th className="px-4 py-2 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {roomFiles.map((file) => (
+                      <tr key={file._id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3">
+                          <div className="font-bold text-gray-900">{file.title}</div>
+                          <div className="text-[10px] text-gray-400">{file.fileType.toUpperCase()} &bull; {new Date(file.createdAt).toLocaleDateString()}</div>
+                        </td>
+                        <td className="px-4 py-3 text-gray-500">
+                          {file.subject} &bull; {file.department}
+                        </td>
+                        <td className="px-4 py-3 text-center text-gray-600 font-medium">{file.downloads}</td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            onClick={() => handleDeleteRoomFile(file._id)}
+                            className="inline-flex items-center justify-center rounded border border-rose-200 bg-rose-50 px-2 py-1 text-[10px] font-semibold text-rose-700 hover:bg-rose-100 transition-colors"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-4 mt-6 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={() => setSelectedRoom(null)}
+                className="rounded border border-gray-300 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -39,7 +39,8 @@ export default function RoomDetailPage({
   const [data, setData] = useState<RoomDetails | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Form states
+  // Modal & Form states
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [department, setDepartment] = useState('');
   const [semester, setSemester] = useState('Semester 1');
@@ -108,7 +109,8 @@ export default function RoomDetailPage({
         setFile(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
 
-        setSuccessMsg('File uploaded successfully! It is visible in this room.');
+        setSuccessMsg('File uploaded successfully!');
+        setIsUploadModalOpen(false);
         fetchRoomDetails();
       } else {
         const errJson = await res.json();
@@ -158,7 +160,7 @@ export default function RoomDetailPage({
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 flex-1 w-full">
       {/* Header */}
-      <div className="border-b border-gray-200 pb-5 mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="border-b border-gray-200 pb-5 mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <Link href="/room" className="inline-flex items-center text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-black mb-2">
             &larr; Back to Rooms
@@ -175,99 +177,102 @@ export default function RoomDetailPage({
             )}
           </div>
         </div>
+
+        <button
+          onClick={() => {
+            setErrorMsg('');
+            setSuccessMsg('');
+            setIsUploadModalOpen(true);
+          }}
+          className="inline-flex items-center justify-center rounded-md bg-black px-4 py-2.5 text-xs font-semibold text-white hover:bg-neutral-800 transition-colors whitespace-nowrap self-start sm:self-center"
+        >
+          Upload Material
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Left: Files inside the room */}
-        <div className="lg:col-span-2 space-y-6">
-          <h2 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-2">Shared Materials</h2>
-
-          {data.files.length === 0 ? (
-            <div className="text-center py-12 border border-dashed border-gray-300 rounded-lg bg-white">
-              <svg
-                className="mx-auto h-12 w-12 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+      {/* Files List (Full Width) */}
+      <div className="w-full">
+        {data.files.length === 0 ? (
+          <div className="text-center py-16 border border-dashed border-gray-300 rounded-lg bg-white">
+            <svg
+              className="mx-auto h-12 w-12 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.5"
+                d="M9 13h6m-3-3v6m-9 1V4a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+              />
+            </svg>
+            <h3 className="mt-2 text-sm font-semibold text-gray-900">No files yet</h3>
+            <p className="mt-1 text-sm text-gray-500">Upload a study file to share it in this room.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {data.files.map((file) => (
+              <div
+                key={file._id}
+                className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex flex-col justify-between"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="1.5"
-                  d="M9 13h6m-3-3v6m-9 1V4a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
-                />
-              </svg>
-              <h3 className="mt-2 text-sm font-semibold text-gray-900">No files yet</h3>
-              <p className="mt-1 text-sm text-gray-500">Upload a study file to share it in this room.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {data.files.map((file) => (
-                <div
-                  key={file._id}
-                  className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-semibold text-gray-600 uppercase tracking-wider">
-                        {file.department}
-                      </span>
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                        {file.fileType}
-                      </span>
-                    </div>
-
-                    <h3 className="text-base font-bold text-gray-900 line-clamp-1">{file.title}</h3>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Subject: {file.subject} &bull; {file.semester}
-                    </p>
-
-                    {file.description && (
-                      <p className="text-xs text-gray-600 mt-2 line-clamp-2 bg-gray-50 p-2 rounded">
-                        {file.description}
-                      </p>
-                    )}
-
-                    <div className="text-[10px] text-gray-400 mt-3 space-y-1">
-                      <div>Size: {formatSize(file.fileSize)}</div>
-                      <div>Downloads: {file.downloads}</div>
-                      <div>Uploaded: {formatDate(file.createdAt)}</div>
-                      {!file.approved && (
-                        <div className="inline-flex items-center text-amber-600 font-semibold mt-1">
-                          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mr-1.5"></span>
-                          Pending Admin Approval
-                        </div>
-                      )}
-                    </div>
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-semibold text-gray-600 uppercase tracking-wider">
+                      {file.department}
+                    </span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                      {file.fileType}
+                    </span>
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <a
-                      href={`/api/download/${file.category === 'admin' ? 'files' : 'user_uploads'}/${file._id}`}
-                      className="w-full inline-flex items-center justify-center rounded bg-black py-2 text-xs font-semibold text-white hover:bg-neutral-800 transition-colors text-center"
-                    >
-                      Download
-                    </a>
+                  <h3 className="text-base font-bold text-gray-900 line-clamp-1">{file.title}</h3>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Subject: {file.subject} &bull; {file.semester}
+                  </p>
+
+                  {file.description && (
+                    <p className="text-xs text-gray-600 mt-2 line-clamp-2 bg-gray-50 p-2 rounded">
+                      {file.description}
+                    </p>
+                  )}
+
+                  <div className="text-[10px] text-gray-400 mt-3 space-y-1">
+                    <div>Size: {formatSize(file.fileSize)}</div>
+                    <div>Downloads: {file.downloads}</div>
+                    <div>Uploaded: {formatDate(file.createdAt)}</div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
 
-        {/* Right: Upload Form */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-24 bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Upload to this Room</h2>
-
-            {successMsg && (
-              <div className="mb-4 rounded-md bg-green-50 p-3 text-xs font-medium text-green-800">
-                {successMsg}
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <a
+                    href={`/api/download/${file.category === 'admin' ? 'files' : 'user_uploads'}/${file._id}`}
+                    className="w-full inline-flex items-center justify-center rounded bg-black py-2 text-xs font-semibold text-white hover:bg-neutral-800 transition-colors text-center"
+                  >
+                    Download
+                  </a>
+                </div>
               </div>
-            )}
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Upload Modal Overlay */}
+      {isUploadModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-xl w-full max-w-md relative animate-in fade-in zoom-in duration-150">
+            <button
+              onClick={() => setIsUploadModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-black text-xl font-semibold outline-none"
+            >
+              &times;
+            </button>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Upload to this Room</h2>
 
             {errorMsg && (
-              <div className="mb-4 rounded-md bg-red-50 p-3 text-xs font-medium text-red-800">
+              <div className="mb-4 rounded bg-red-50 p-2.5 text-xs font-medium text-red-800">
                 {errorMsg}
               </div>
             )}
@@ -371,7 +376,7 @@ export default function RoomDetailPage({
             </form>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
