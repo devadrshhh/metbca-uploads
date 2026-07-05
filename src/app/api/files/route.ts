@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import File from '@/models/File';
-import UserUpload from '@/models/UserUpload';
 
 export async function GET(req: NextRequest) {
   try {
@@ -37,21 +36,7 @@ export async function GET(req: NextRequest) {
     // Fetch files from 'files' collection (which are admin files, default approved: true)
     const adminFiles = await File.find(filter).sort({ createdAt: -1 });
 
-    // Fetch approved user uploads
-    const userUploadsFilter = {
-      $and: [
-        ...filter.$and,
-        { approved: true }
-      ]
-    };
-    const userFiles = await UserUpload.find(userUploadsFilter).sort({ createdAt: -1 });
-
-    // Merge and sort by createdAt descending
-    const allFiles = [...adminFiles, ...userFiles].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-
-    return NextResponse.json({ files: allFiles });
+    return NextResponse.json({ files: adminFiles });
   } catch (error: any) {
     return NextResponse.json({ message: 'Error fetching files', error: error.message }, { status: 500 });
   }
