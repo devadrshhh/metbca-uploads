@@ -31,6 +31,7 @@ export default function UserUploadsPage() {
   const [semester, setSemester] = useState('Semester 1');
   const [description, setDescription] = useState('');
   const [file, setFile] = useState<File | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Status states
   const [uploading, setUploading] = useState(false);
@@ -42,7 +43,7 @@ export default function UserUploadsPage() {
   const fetchUploads = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/uploads');
+      const res = await fetch(`/api/uploads?search=${encodeURIComponent(searchQuery)}`);
       if (res.ok) {
         const data = await res.json();
         setUploads(data.uploads || []);
@@ -55,8 +56,11 @@ export default function UserUploadsPage() {
   };
 
   useEffect(() => {
-    fetchUploads();
-  }, []);
+    const delayDebounce = setTimeout(() => {
+      fetchUploads();
+    }, 300);
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
 
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,6 +141,28 @@ export default function UserUploadsPage() {
         </div>
       )}
 
+      {/* Search bar */}
+      <div className="mb-6 max-w-md relative">
+        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+          <svg
+            className="h-4 w-4 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          placeholder="Search student uploads by title, subject..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="block w-full rounded-md border border-gray-300 bg-white py-2 pl-9 pr-3 text-xs outline-none focus:border-black"
+        />
+      </div>
+
       {/* Uploads List */}
       <div>
         {loading ? (
@@ -158,8 +184,12 @@ export default function UserUploadsPage() {
                 d="M9 13h6m-3-3v6m-9 1V4a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
               />
             </svg>
-            <h3 className="mt-2 text-sm font-semibold text-gray-900">No approved student uploads yet</h3>
-            <p className="mt-1 text-sm text-gray-500">Click "Contribute File" to upload the first study material.</p>
+            <h3 className="mt-2 text-sm font-semibold text-gray-900">
+              {searchQuery ? 'No uploads found' : 'No approved student uploads yet'}
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {searchQuery ? 'Try adjusting your search query.' : 'Click "Contribute File" to upload the first study material.'}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
