@@ -22,8 +22,17 @@ export async function GET(
       return NextResponse.json({ message: 'File not found' }, { status: 404 });
     }
 
+    // Construct the download URL
+    let downloadUrl = fileDoc.fileUrl;
+
+    // Apply fl_attachment only to image/upload resources (PDFs, images) to force download
+    // Raw assets (docx, zip, html) download directly by default and do not support transformations
+    if (downloadUrl.includes('/image/upload/')) {
+      downloadUrl = downloadUrl.replace('/upload/', '/upload/fl_attachment/');
+    }
+
     // Redirect the user directly to the public Cloudinary asset URL
-    return NextResponse.redirect(fileDoc.fileUrl);
+    return NextResponse.redirect(downloadUrl);
   } catch (error: any) {
     return NextResponse.json({ message: 'Error processing download', error: error.message }, { status: 500 });
   }
