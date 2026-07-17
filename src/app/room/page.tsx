@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: 'HeyBCA Study Rooms - Peer Collaborative Workspaces',
   description: 'Join or create collaborative study rooms on HeyBCA. Share previous year questions (PYQs), course records, and lecture notes with fellow BCA students.',
   alternates: {
-    canonical: 'https://heybca.vercel.app/room',
+    canonical: 'https://bca.microxlearn.online/room',
   },
 };
 

@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: 'HeyBCA Student Contributions - Shared BCA Notes & Study Resources',
   description: 'Access peer-contributed study materials, semester notes, and question banks uploaded by BCA students on the HeyBCA portal.',
   alternates: {
-    canonical: 'https://heybca.vercel.app/uploads',
+    canonical: 'https://bca.microxlearn.online/uploads',
   },
 };
 

@@ -5,17 +5,17 @@ export const metadata: Metadata = {
   title: 'HeyBCA - Calicut University BCA Notes, PYQs & Study Materials',
   description: 'Download Calicut University FYUGP BCA syllabus notes, semester study materials, and previous year question papers (PYQs) for free on HeyBCA.',
   alternates: {
-    canonical: 'https://heybca.vercel.app',
+    canonical: 'https://bca.microxlearn.online',
   },
   openGraph: {
     title: 'HeyBCA - Calicut University BCA Notes, PYQs & Study Materials',
     description: 'Download Calicut University FYUGP BCA syllabus notes, semester study materials, and previous year question papers (PYQs) for free on HeyBCA.',
-    url: 'https://heybca.vercel.app',
+    url: 'https://bca.microxlearn.online',
     siteName: 'HeyBCA',
     type: 'website',
     images: [
       {
-        url: 'https://heybca.vercel.app/og-image.png',
+        url: 'https://bca.microxlearn.online/og-image.png',
         width: 1200,
         height: 630,
         alt: 'HeyBCA Notes & Study Materials Portal',
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'HeyBCA - Calicut University BCA Notes, PYQs & Study Materials',
     description: 'Download Calicut University FYUGP BCA syllabus notes, semester study materials, and previous year question papers (PYQs) for free on HeyBCA.',
-    images: ['https://heybca.vercel.app/og-image.png'],
+    images: ['https://bca.microxlearn.online/og-image.png'],
   },
 };
 
@@ -36,19 +36,19 @@ export default function HomePage() {
     '@graph': [
       {
         '@type': 'WebSite',
-        '@id': 'https://heybca.vercel.app/#website',
-        'url': 'https://heybca.vercel.app/',
+        '@id': 'https://bca.microxlearn.online/#website',
+        'url': 'https://bca.microxlearn.online/',
         'name': 'HeyBCA',
         'description': 'Download Calicut University FYUGP BCA Notes, Semester Notes, PYQs, and Study Materials.',
         'publisher': {
-          '@id': 'https://heybca.vercel.app/#organization',
+          '@id': 'https://bca.microxlearn.online/#organization',
         },
         'potentialAction': [
           {
             '@type': 'SearchAction',
             'target': {
               '@type': 'EntryPoint',
-              'urlTemplate': 'https://heybca.vercel.app/?search={search_term_string}',
+              'urlTemplate': 'https://bca.microxlearn.online/?search={search_term_string}',
             },
             'query-input': 'required name=search_term_string',
           },
@@ -56,10 +56,10 @@ export default function HomePage() {
       },
       {
         '@type': 'Organization',
-        '@id': 'https://heybca.vercel.app/#organization',
+        '@id': 'https://bca.microxlearn.online/#organization',
         'name': 'HeyBCA',
-        'url': 'https://heybca.vercel.app/',
-        'logo': 'https://heybca.vercel.app/favicon.ico',
+        'url': 'https://bca.microxlearn.online/',
+        'logo': 'https://bca.microxlearn.online/favicon.ico',
       },
     ],
   };

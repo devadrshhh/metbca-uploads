@@ -23,7 +23,7 @@ export async function generateMetadata({
       title: `${room.name} - HeyBCA Study Room`,
       description: `Access and share files, notes, previous year question papers (PYQs), and study resources for ${room.name} in this collaborative room on HeyBCA.`,
       alternates: {
-        canonical: `https://heybca.vercel.app/room/${id}`,
+        canonical: `https://bca.microxlearn.online/room/${id}`,
       },
     };
   } catch (error) {

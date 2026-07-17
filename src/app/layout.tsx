@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: "%s | HeyBCA"
   },
   description: "HeyBCA is a collaborative study portal to search, download, and share Calicut University BCA syllabus notes, semester guides, and previous year question papers (PYQs).",
-  metadataBase: new URL('https://heybca.vercel.app'),
+  metadataBase: new URL('https://bca.microxlearn.online'),
   verification: {
     google: 'google-site-verification-token-placeholder',
   },
@@ -38,10 +38,10 @@ export default function RootLayout({
   const orgJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    '@id': 'https://heybca.vercel.app/#organization',
+    '@id': 'https://bca.microxlearn.online/#organization',
     'name': 'HeyBCA',
-    'url': 'https://heybca.vercel.app/',
-    'logo': 'https://heybca.vercel.app/favicon.ico',
+    'url': 'https://bca.microxlearn.online/',
+    'logo': 'https://bca.microxlearn.online/favicon.ico',
   };
 
   return (
