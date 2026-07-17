@@ -14,8 +14,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Study Materials Portal",
-  description: "Access, download, and share study materials easily.",
+  title: {
+    default: "HeyBCA ",
+    template: "%s | HeyBCA"
+  },
+  description: "HeyBCA is a collaborative study portal to search, download, and share Calicut University BCA syllabus notes, semester guides, and previous year question papers (PYQs).",
+  metadataBase: new URL('https://heybca.vercel.app'),
+  verification: {
+    google: 'google-site-verification-token-placeholder',
+  },
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  }
 };
 
 export default function RootLayout({
@@ -23,13 +35,28 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const orgJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    '@id': 'https://heybca.vercel.app/#organization',
+    'name': 'HeyBCA',
+    'url': 'https://heybca.vercel.app/',
+    'logo': 'https://heybca.vercel.app/favicon.ico',
+  };
+
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-gray-50 text-gray-900 selection:bg-black selection:text-white">
         <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md">
           <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-8">
-              <Link href="/" className="flex items-center gap-2 font-semibold text-lg tracking-tight">
+              <Link href="/" className="flex items-center gap-2 font-semibold text-lg tracking-tight hover:opacity-90 transition-opacity">
                 <svg
                   className="h-6 w-6 text-black"
                   fill="none"
@@ -43,7 +70,7 @@ export default function RootLayout({
                     d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
                   />
                 </svg>
-                <span>Study Materials Portal</span>
+                <span>HeyBCA</span>
               </Link>
               <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
                 <Link href="/" className="hover:text-black transition-colors">
@@ -84,7 +111,7 @@ export default function RootLayout({
 
         <footer className="border-t border-gray-200 bg-white py-8">
           <div className="mx-auto max-w-7xl px-4 text-center text-xs text-gray-500 sm:px-6 lg:px-8">
-            <p>&copy; {new Date().getFullYear()} A MicroX Project. All rights reserved MicroX.</p>
+            <p>&copy; {new Date().getFullYear()} HeyBCA. A MicroX Project. All rights reserved MicroX.</p>
           </div>
         </footer>
       </body>
